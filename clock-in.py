@@ -16,6 +16,7 @@ class ClockIn(object):
     Attributes:
         username: (str) 浙大统一认证平台用户名（一般为学号）
         password: (str) 浙大统一认证平台密码
+        eai_sess: (str) cookie of healthreport.zju.edu.cn/ncov/wap/default/index
         LOGIN_URL: (str) 登录url
         BASE_URL: (str) 打卡首页url
         SAVE_URL: (str) 提交打卡url
@@ -30,9 +31,10 @@ class ClockIn(object):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
     }
     
-    def __init__(self, username, password):
+    def __init__(self, username, password, eai_sess):
         self.username = username
         self.password = password
+        self.eai_sess = eai_sess
         self.sess = requests.Session()
         self.ocr = ddddocr.DdddOcr()
 
@@ -71,7 +73,7 @@ class ClockIn(object):
 
     def get_captcha(self):
         """Get CAPTCHA code"""
-        cookie_dict = {'eai-sess': '9k1adtbd8ti87t488f786vvtl3'}
+        cookie_dict = {'eai-sess': self.eai_sess}
         self.sess.cookies = requests.cookies.cookiejar_from_dict(cookie_dict)
         resp = self.sess.get(self.CAPTCHA_URL)
         captcha = self.ocr.classification(resp.content)
@@ -154,17 +156,18 @@ class DecodeError(Exception):
     pass
 
 
-def main(username, password):
+def main(username, password, eai_sess):
     """Hit card process
     Arguments:
         username: (str) 浙大统一认证平台用户名（一般为学号）
         password: (str) 浙大统一认证平台密码
+        eai-sess: (str) cookie of healthreport.zju.edu.cn/ncov/wap/default/index
     """
     print("\n[Time] %s" %
           datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print("🚌 打卡任务启动")
 
-    dk = ClockIn(username, password)
+    dk = ClockIn(username, password, eai_sess)
 
     print("登录到浙大统一身份认证平台...")
     try:
@@ -191,6 +194,11 @@ def main(username, password):
             print(res['m'])
             if res['m'].find("已经") != -1: # 已经填报过了 不报错
                 pass
+            elif res['m'].find("验证码错误") != -1: # 验证码错误
+                print('再次尝试')
+                time.sleep(5)
+                main(username, password, eai_sess)
+                pass
             else:
                 raise Exception
     except Exception:
@@ -201,7 +209,8 @@ def main(username, password):
 if __name__ == "__main__":
     username = sys.argv[1]
     password = sys.argv[2]
+    eai_sess = sys.argv[3]
     try:
-        main(username, password)
+        main(username, password, eai_sess)
     except Exception:
         exit(1)
