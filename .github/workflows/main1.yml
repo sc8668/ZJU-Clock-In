@@ -29,5 +29,10 @@ jobs:
           ACCOUNT: ${{ secrets.ACCOUNT }}
           PASSWORD: ${{ secrets.PASSWORD }}
           EAI_SESS: ${{ secrets.EAI_SESS }}
+          ACCOUNTWTY: ${{ secrets.ACCOUNTWTY }}
+          PASSWORDWTY: ${{ secrets.PASSWORDWTY }}
+          EAI_SESSWTY: ${{ secrets.EAI_SESSWTY }}
         run: |
           python3 clock-in.py ${ACCOUNT} ${PASSWORD} ${EAI_SESS}
+          python3 clock-in.py ${ACCOUNTWTY} ${PASSWORDWTY} ${EAI_SESSWTY}
+          
