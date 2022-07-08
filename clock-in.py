@@ -85,6 +85,7 @@ class ClockIn(object):
         if not html:
             res = self.sess.get(self.BASE_URL, headers=self.HEADERS)
             html = res.content.decode()
+            # print(html)
 
         try:
             old_infos = re.findall(r'oldInfo: ({[^\n]+})', html)
@@ -121,7 +122,8 @@ class ClockIn(object):
         new_info['jcqzrq'] = ""
         new_info['gwszdd'] = ""
         new_info['szgjcs'] = ""
-        new_info['verifyCode'] = self.get_captcha()
+        new_info['internship'] = 1
+        # new_info['verifyCode'] = self.get_captcha()
 
         # 2021.08.05 Fix 2
         magics = re.findall(r'"([0-9a-f]{32})":\s*"([^\"]+)"', html)
